@@ -278,6 +278,9 @@
                                     <i class="fas fa-upload me-1"></i>นำเข้า
                                 </button>
                             </div>
+                            <button class="btn btn-secondary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#exportModal" onclick="setExportType('purchase')" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-file-excel me-1"></i>Export
+                            </button>
                             <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addPurchaseModal" style="height: 42px; min-width: 120px;">
                                 <i class="fas fa-plus me-2"></i>เพิ่มข้อมูล
                             </button>
@@ -335,6 +338,9 @@
                                     <i class="fas fa-upload me-1"></i>นำเข้า
                                 </button>
                             </div>
+                            <button class="btn btn-secondary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#exportModal" onclick="setExportType('hire')" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-file-excel me-1"></i>Export
+                            </button>
                             <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addHireModal" style="height: 42px; min-width: 120px;">
                                 <i class="fas fa-plus me-2"></i>เพิ่มข้อมูล
                             </button>
@@ -524,6 +530,47 @@
         </div>
     </div>
 
+    <!-- Export Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-excel me-2"></i>Export ข้อมูลเป็น Excel</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm">
+                        <input type="hidden" id="exportType">
+                        <div class="mb-3">
+                            <label class="form-label">ประเภทเอกสาร</label>
+                            <input type="text" class="form-control" id="exportDocumentType" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">เลือกปีที่ต้องการ Export</label>
+                            <select class="form-select" id="exportYear" required>
+                                <option value="">เลือกปี</option>
+                                <option value="2568">2568</option>
+                                <option value="2569">2569</option>
+                                <option value="2570">2570</option>
+                                <option value="all">ทุกปี</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            ไฟล์ Excel จะถูกดาวน์โหลดในรูปแบบ .xlsx พร้อมข้อมูลที่เรียงตามวันที่
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                        <i class="fas fa-download me-2"></i>ดาวน์โหลด Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Modal -->
     <div class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -602,6 +649,9 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Firebase SDK v11+ -->
     <script type="module">
@@ -640,6 +690,8 @@
         window.updateRecord = updateRecord;
         window.downloadTemplate = downloadTemplate;
         window.importData = importData;
+        window.setExportType = setExportType;
+        window.exportToExcel = exportToExcel;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1339,6 +1391,115 @@
 
             reader.readAsText(file, 'UTF-8');
         }
+
+        function setExportType(type) {
+            document.getElementById('exportType').value = type;
+            document.getElementById('exportDocumentType').value = type === 'purchase' ? 'ใบสั่งซื้อ' : 'ใบสั่งจ้าง';
+            document.getElementById('exportYear').value = '';
+        }
+
+        function exportToExcel() {
+            const form = document.getElementById('exportForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const type = document.getElementById('exportType').value;
+            const selectedYear = document.getElementById('exportYear').value;
+            
+            // Get data based on type
+            const sourceData = type === 'purchase' ? purchaseData : hireData;
+            
+            // Filter by year if not "all"
+            let filteredData = sourceData;
+            if (selectedYear && selectedYear !== 'all') {
+                filteredData = sourceData.filter(item => item.year === selectedYear);
+            }
+
+            if (filteredData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่มีข้อมูล!',
+                    text: 'ไม่พบข้อมูลในปีที่เลือก'
+                });
+                return;
+            }
+
+            // Sort by date (newest first)
+            filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Prepare data for Excel
+            const excelData = filteredData.map((item, index) => ({
+                'ลำดับ': index + 1,
+                'เลขที่เอกสาร': `${item.number}/${item.year}`,
+                'เรื่อง': item.subject,
+                'ลงวันที่': new Date(item.date).toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }),
+                'วงเงิน (บาท)': item.amount ? parseFloat(item.amount).toLocaleString('th-TH', {minimumFractionDigits: 2}) : '-',
+                'สถานะ': item.status,
+                'ผู้จอง': item.reserver,
+                'วันที่บันทึก': new Date(item.timestamp).toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            }));
+
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(excelData);
+
+            // Set column widths
+            const colWidths = [
+                { wch: 8 },   // ลำดับ
+                { wch: 15 },  // เลขที่เอกสาร
+                { wch: 40 },  // เรื่อง
+                { wch: 15 },  // ลงวันที่
+                { wch: 15 },  // วงเงิน
+                { wch: 12 },  // สถานะ
+                { wch: 12 },  // ผู้จอง
+                { wch: 20 }   // วันที่บันทึก
+            ];
+            ws['!cols'] = colWidths;
+
+            // Add worksheet to workbook
+            const sheetName = type === 'purchase' ? 'ใบสั่งซื้อ' : 'ใบสั่งจ้าง';
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+            // Generate filename
+            const yearText = selectedYear === 'all' ? 'ทุกปี' : `ปี ${selectedYear}`;
+            const docType = type === 'purchase' ? 'ใบสั่งซื้อ' : 'ใบสั่งจ้าง';
+            const filename = `${docType}_${yearText}_${new Date().toLocaleDateString('th-TH').replace(/\//g, '-')}.xlsx`;
+
+            // Save file
+            try {
+                XLSX.writeFile(wb, filename);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Export สำเร็จ!',
+                    text: `ดาวน์โหลดไฟล์ Excel เรียบร้อยแล้ว (${filteredData.length} รายการ)`,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: 'ไม่สามารถสร้างไฟล์ Excel ได้ กรุณาลองใหม่อีกครั้ง'
+                });
+            }
+        }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98848dd364b71d37',t:'MTc1OTQxMTgyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98850b29b06f1d37',t:'MTc1OTQxNjk1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
