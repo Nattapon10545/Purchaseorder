@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจองเลขใบสั่งซื้อ/ใบสั่งจ้าง - โรงเรียนบ้านกิ่วพร้าว</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #fff5e6 0%, #fffacd 100%);
+            min-height: 100vh;
+        }
+        
+        .header-title {
+            font-family: 'Kanit', sans-serif;
+            color: #ff8c42;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .school-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .nav-tabs .nav-link {
+            font-family: 'Kanit', sans-serif;
+            font-weight: 500;
+            color: #ff8c42;
+            border: none;
+            background: rgba(255, 140, 66, 0.1);
+            margin-right: 10px;
+            border-radius: 25px 25px 0 0;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: #ff8c42;
+            color: white;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.95);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #ff8c42, #ffa726);
+            border: none;
+            border-radius: 25px;
+            font-weight: 500;
+            padding: 10px 25px;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #e67e22, #ff9800);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 140, 66, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #ffd54f, #ffeb3b);
+            border: none;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #66bb6a, #4caf50);
+            border: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ef5350, #f44336);
+            border: none;
+        }
+        
+        .btn-info {
+            background: linear-gradient(45deg, #29b6f6, #03a9f4);
+            border: none;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: linear-gradient(45deg, #0288d1, #0277bd);
+            color: white;
+        }
+        
+        .status-reserved {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            background: #d1edff;
+            color: #0c5460;
+            border: 2px solid #28a745;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .table th {
+            background: linear-gradient(45deg, #ff8c42, #ffa726);
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            border-color: #f0f0f0;
+        }
+        
+        .subject-column {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .modal-header {
+            background: linear-gradient(45deg, #ff8c42, #ffa726);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #ff8c42;
+            box-shadow: 0 0 0 0.2rem rgba(255, 140, 66, 0.25);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #ff8c42;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .pagination .page-link {
+            color: #ff8c42;
+            border: 1px solid #ff8c42;
+            margin: 0 2px;
+            border-radius: 8px;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: #ff8c42;
+            color: white;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #ff8c42;
+            border-color: #ff8c42;
+        }
+        
+        @media (max-width: 768px) {
+            .school-logo {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .header-title {
+                font-size: 1.5rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            
+            .btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center text-white">
+            <div class="spinner mb-3"></div>
+            <h5>กำลังบันทึกข้อมูล...</h5>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <img src="https://lh3.googleusercontent.com/d/1vQtWxoqhL4BWuOmDehWMGTqoRh63AThV" alt="โรงเรียนบ้านกิ่วพร้าว" class="school-logo mb-3">
+            <h1 class="header-title mb-2">ระบบจองเลขใบสั่งซื้อ/ใบสั่งจ้าง</h1>
+            <h4 class="text-muted">โรงเรียนบ้านกิ่วพร้าว</h4>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs justify-content-center mb-4" id="mainTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="purchase-tab" data-bs-toggle="tab" href="#purchase" role="tab">
+                    <i class="fas fa-shopping-cart me-2"></i>ใบสั่งซื้อ
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="hire-tab" data-bs-toggle="tab" href="#hire" role="tab">
+                    <i class="fas fa-handshake me-2"></i>ใบสั่งจ้าง
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="mainTabContent">
+            <!-- Purchase Orders Tab -->
+            <div class="tab-pane fade show active" id="purchase" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>รายการใบสั่งซื้อ</h5>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <select class="form-select rounded-pill" id="yearFilterPurchase" style="width: 120px; height: 42px;">
+                                <option value="">ทุกปี</option>
+                                <option value="2568">2568</option>
+                                <option value="2569">2569</option>
+                                <option value="2570">2570</option>
+                            </select>
+                            <button class="btn btn-warning rounded-pill px-4" id="sortPurchase" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-sort me-1"></i>เรียงลำดับ
+                            </button>
+                            <button class="btn btn-info rounded-pill px-4" onclick="downloadTemplate('purchase')" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-download me-1"></i>Template
+                            </button>
+                            <div class="position-relative">
+                                <input type="file" id="importPurchaseFile" accept=".csv" style="display: none;" onchange="importData('purchase', this)">
+                                <button class="btn btn-success rounded-pill px-4" onclick="document.getElementById('importPurchaseFile').click()" style="height: 42px; min-width: 120px;">
+                                    <i class="fas fa-upload me-1"></i>นำเข้า
+                                </button>
+                            </div>
+                            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addPurchaseModal" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-plus me-2"></i>เพิ่มข้อมูล
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>เลขที่เอกสาร</th>
+                                        <th>เรื่อง</th>
+                                        <th>ลงวันที่</th>
+                                        <th>วงเงิน</th>
+                                        <th>สถานะ</th>
+                                        <th>ผู้จอง</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="purchaseTableBody">
+                                    <!-- Data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav>
+                            <ul class="pagination justify-content-center" id="purchasePagination">
+                                <!-- Pagination will be generated here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hire Orders Tab -->
+            <div class="tab-pane fade" id="hire" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0"><i class="fas fa-handshake me-2"></i>รายการใบสั่งจ้าง</h5>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <select class="form-select rounded-pill" id="yearFilterHire" style="width: 120px; height: 42px;">
+                                <option value="">ทุกปี</option>
+                                <option value="2568">2568</option>
+                                <option value="2569">2569</option>
+                                <option value="2570">2570</option>
+                            </select>
+                            <button class="btn btn-warning rounded-pill px-4" id="sortHire" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-sort me-1"></i>เรียงลำดับ
+                            </button>
+                            <button class="btn btn-info rounded-pill px-4" onclick="downloadTemplate('hire')" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-download me-1"></i>Template
+                            </button>
+                            <div class="position-relative">
+                                <input type="file" id="importHireFile" accept=".csv" style="display: none;" onchange="importData('hire', this)">
+                                <button class="btn btn-success rounded-pill px-4" onclick="document.getElementById('importHireFile').click()" style="height: 42px; min-width: 120px;">
+                                    <i class="fas fa-upload me-1"></i>นำเข้า
+                                </button>
+                            </div>
+                            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addHireModal" style="height: 42px; min-width: 120px;">
+                                <i class="fas fa-plus me-2"></i>เพิ่มข้อมูล
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>เลขที่เอกสาร</th>
+                                        <th>เรื่อง</th>
+                                        <th>ลงวันที่</th>
+                                        <th>วงเงิน</th>
+                                        <th>สถานะ</th>
+                                        <th>ผู้จอง</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hireTableBody">
+                                    <!-- Data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav>
+                            <ul class="pagination justify-content-center" id="hirePagination">
+                                <!-- Pagination will be generated here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Purchase Modal -->
+    <div class="modal fade" id="addPurchaseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus me-2"></i>เพิ่มใบสั่งซื้อ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="purchaseForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ปีที่</label>
+                                <select class="form-select" id="purchaseYear" required>
+                                    <option value="">เลือกปี</option>
+                                    <option value="2568">2568</option>
+                                    <option value="2569">2569</option>
+                                    <option value="2570">2570</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">เลขที่</label>
+                                <select class="form-select" id="purchaseNumber" required>
+                                    <option value="">เลือกเลขที่</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">เรื่อง</label>
+                            <input type="text" class="form-control" id="purchaseSubject" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ลงวันที่</label>
+                                <input type="date" class="form-control" id="purchaseDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">วงเงิน (ถ้ามี)</label>
+                                <input type="number" class="form-control" id="purchaseAmount" step="0.01">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">สถานะ</label>
+                                <select class="form-select" id="purchaseStatus" required>
+                                    <option value="">เลือกสถานะ</option>
+                                    <option value="จอง">จอง</option>
+                                    <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ผู้จอง</label>
+                                <select class="form-select" id="purchaseReserver" required>
+                                    <option value="">เลือกผู้จอง</option>
+                                    <option value="ผอ.">ผอ.</option>
+                                    <option value="ครูโฉม">ครูโฉม</option>
+                                    <option value="ครูมดใหญ่">ครูมดใหญ่</option>
+                                    <option value="ครูมอส">ครูมอส</option>
+                                    <option value="ครูแบม">ครูแบม</option>
+                                    <option value="ครูเอฟ">ครูเอฟ</option>
+                                    <option value="ครูแอม">ครูแอม</option>
+                                    <option value="ครูมดน้อย">ครูมดน้อย</option>
+                                    <option value="ครูเก่ง">ครูเก่ง</option>
+                                    <option value="ครูฟ้า">ครูฟ้า</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="savePurchaseOrder()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Hire Modal -->
+    <div class="modal fade" id="addHireModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus me-2"></i>เพิ่มใบสั่งจ้าง</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="hireForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ปีที่</label>
+                                <select class="form-select" id="hireYear" required>
+                                    <option value="">เลือกปี</option>
+                                    <option value="2568">2568</option>
+                                    <option value="2569">2569</option>
+                                    <option value="2570">2570</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">เลขที่</label>
+                                <select class="form-select" id="hireNumber" required>
+                                    <option value="">เลือกเลขที่</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">เรื่อง</label>
+                            <input type="text" class="form-control" id="hireSubject" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ลงวันที่</label>
+                                <input type="date" class="form-control" id="hireDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">วงเงิน (ถ้ามี)</label>
+                                <input type="number" class="form-control" id="hireAmount" step="0.01">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">สถานะ</label>
+                                <select class="form-select" id="hireStatus" required>
+                                    <option value="">เลือกสถานะ</option>
+                                    <option value="จอง">จอง</option>
+                                    <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ผู้จอง</label>
+                                <select class="form-select" id="hireReserver" required>
+                                    <option value="">เลือกผู้จอง</option>
+                                    <option value="ผอ.">ผอ.</option>
+                                    <option value="ครูโฉม">ครูโฉม</option>
+                                    <option value="ครูมดใหญ่">ครูมดใหญ่</option>
+                                    <option value="ครูมอส">ครูมอส</option>
+                                    <option value="ครูแบม">ครูแบม</option>
+                                    <option value="ครูเอฟ">ครูเอฟ</option>
+                                    <option value="ครูแอม">ครูแอม</option>
+                                    <option value="ครูมดน้อย">ครูมดน้อย</option>
+                                    <option value="ครูเก่ง">ครูเก่ง</option>
+                                    <option value="ครูฟ้า">ครูฟ้า</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="saveHireOrder()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>แก้ไขข้อมูล</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="editId">
+                        <input type="hidden" id="editType">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ปีที่</label>
+                                <select class="form-select" id="editYear" required>
+                                    <option value="2568">2568</option>
+                                    <option value="2569">2569</option>
+                                    <option value="2570">2570</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">เลขที่</label>
+                                <select class="form-select" id="editNumber" required>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">เรื่อง</label>
+                            <input type="text" class="form-control" id="editSubject" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ลงวันที่</label>
+                                <input type="date" class="form-control" id="editDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">วงเงิน (ถ้ามี)</label>
+                                <input type="number" class="form-control" id="editAmount" step="0.01">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">สถานะ</label>
+                                <select class="form-select" id="editStatus" required>
+                                    <option value="จอง">จอง</option>
+                                    <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ผู้จอง</label>
+                                <select class="form-select" id="editReserver" required>
+                                    <option value="ผอ.">ผอ.</option>
+                                    <option value="ครูโฉม">ครูโฉม</option>
+                                    <option value="ครูมดใหญ่">ครูมดใหญ่</option>
+                                    <option value="ครูมอส">ครูมอส</option>
+                                    <option value="ครูแบม">ครูแบม</option>
+                                    <option value="ครูเอฟ">ครูเอฟ</option>
+                                    <option value="ครูแอม">ครูแอม</option>
+                                    <option value="ครูมดน้อย">ครูมดน้อย</option>
+                                    <option value="ครูเก่ง">ครูเก่ง</option>
+                                    <option value="ครูฟ้า">ครูฟ้า</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="updateRecord()">บันทึกการแก้ไข</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDK v11+ -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+        import { getDatabase, ref, push, set, get, remove, onValue } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzRqo25-H5l3-r6GoUF6xiXhVag7Grusg",
+            authDomain: "purchase-order-dc0d7.firebaseapp.com",
+            databaseURL: "https://purchase-order-dc0d7-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "purchase-order-dc0d7",
+            storageBucket: "purchase-order-dc0d7.firebasestorage.app",
+            messagingSenderId: "184530260681",
+            appId: "1:184530260681:web:9c172e6bbca4b6299d3318"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Global variables
+        let purchaseData = [];
+        let hireData = [];
+        let currentPurchasePage = 1;
+        let currentHirePage = 1;
+        let purchaseSortAsc = false;
+        let hireSortAsc = false;
+        const itemsPerPage = 20;
+
+        // Make functions globally available
+        window.savePurchaseOrder = savePurchaseOrder;
+        window.saveHireOrder = saveHireOrder;
+        window.editRecord = editRecord;
+        window.deleteRecord = deleteRecord;
+        window.updateRecord = updateRecord;
+        window.downloadTemplate = downloadTemplate;
+        window.importData = importData;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupEventListeners();
+            setDefaultDate();
+        });
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('purchaseDate').value = today;
+            document.getElementById('hireDate').value = today;
+        }
+
+        function setupEventListeners() {
+            // Year change listeners for number population
+            document.getElementById('purchaseYear').addEventListener('change', function() {
+                populateNumbers('purchase', this.value);
+            });
+
+            document.getElementById('hireYear').addEventListener('change', function() {
+                populateNumbers('hire', this.value);
+            });
+
+            document.getElementById('editYear').addEventListener('change', function() {
+                populateEditNumbers(this.value);
+            });
+
+            // Filter listeners
+            document.getElementById('yearFilterPurchase').addEventListener('change', function() {
+                currentPurchasePage = 1;
+                displayPurchaseData();
+            });
+
+            document.getElementById('yearFilterHire').addEventListener('change', function() {
+                currentHirePage = 1;
+                displayHireData();
+            });
+
+            // Sort listeners
+            document.getElementById('sortPurchase').addEventListener('click', function() {
+                purchaseSortAsc = !purchaseSortAsc;
+                currentPurchasePage = 1;
+                displayPurchaseData();
+            });
+
+            document.getElementById('sortHire').addEventListener('click', function() {
+                hireSortAsc = !hireSortAsc;
+                currentHirePage = 1;
+                displayHireData();
+            });
+        }
+
+        function populateNumbers(type, year) {
+            const selectElement = document.getElementById(type + 'Number');
+            selectElement.innerHTML = '<option value="">เลือกเลขที่</option>';
+            
+            if (!year) return;
+
+            // Get used numbers for this year and type
+            const data = type === 'purchase' ? purchaseData : hireData;
+            const usedNumbers = data
+                .filter(item => item.year === year)
+                .map(item => parseInt(item.number));
+
+            // Generate available numbers (1-100)
+            for (let i = 1; i <= 100; i++) {
+                if (!usedNumbers.includes(i)) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    selectElement.appendChild(option);
+                }
+            }
+        }
+
+        function populateEditNumbers(year) {
+            const selectElement = document.getElementById('editNumber');
+            const currentNumber = selectElement.getAttribute('data-current');
+            selectElement.innerHTML = '';
+            
+            if (!year) return;
+
+            const editType = document.getElementById('editType').value;
+            const data = editType === 'purchase' ? purchaseData : hireData;
+            const usedNumbers = data
+                .filter(item => item.year === year && item.number !== currentNumber)
+                .map(item => parseInt(item.number));
+
+            // Generate available numbers (1-100) plus current number
+            for (let i = 1; i <= 100; i++) {
+                if (!usedNumbers.includes(i) || i.toString() === currentNumber) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    if (i.toString() === currentNumber) {
+                        option.selected = true;
+                    }
+                    selectElement.appendChild(option);
+                }
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function loadData() {
+            // Load purchase orders
+            const purchaseRef = ref(database, 'purchaseOrders');
+            onValue(purchaseRef, (snapshot) => {
+                purchaseData = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        purchaseData.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                }
+                displayPurchaseData();
+            });
+
+            // Load hire orders
+            const hireRef = ref(database, 'hireOrders');
+            onValue(hireRef, (snapshot) => {
+                hireData = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        hireData.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                }
+                displayHireData();
+            });
+        }
+
+        function displayPurchaseData() {
+            const tbody = document.getElementById('purchaseTableBody');
+            const yearFilter = document.getElementById('yearFilterPurchase').value;
+            
+            let filteredData = purchaseData;
+            if (yearFilter) {
+                filteredData = purchaseData.filter(item => item.year === yearFilter);
+            }
+
+            // Sort data
+            filteredData.sort((a, b) => {
+                const aDate = new Date(a.date);
+                const bDate = new Date(b.date);
+                return purchaseSortAsc ? aDate - bDate : bDate - aDate;
+            });
+
+            // Pagination
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const startIndex = (currentPurchasePage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            tbody.innerHTML = '';
+            pageData.forEach(item => {
+                const row = createTableRow(item, 'purchase');
+                tbody.appendChild(row);
+            });
+
+            createPagination('purchase', totalPages, currentPurchasePage);
+        }
+
+        function displayHireData() {
+            const tbody = document.getElementById('hireTableBody');
+            const yearFilter = document.getElementById('yearFilterHire').value;
+            
+            let filteredData = hireData;
+            if (yearFilter) {
+                filteredData = hireData.filter(item => item.year === yearFilter);
+            }
+
+            // Sort data
+            filteredData.sort((a, b) => {
+                const aDate = new Date(a.date);
+                const bDate = new Date(b.date);
+                return hireSortAsc ? aDate - bDate : bDate - aDate;
+            });
+
+            // Pagination
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const startIndex = (currentHirePage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            tbody.innerHTML = '';
+            pageData.forEach(item => {
+                const row = createTableRow(item, 'hire');
+                tbody.appendChild(row);
+            });
+
+            createPagination('hire', totalPages, currentHirePage);
+        }
+
+        function createTableRow(item, type) {
+            const row = document.createElement('tr');
+            const statusClass = item.status === 'จอง' ? 'status-reserved' : 'status-completed';
+            const amount = item.amount ? parseFloat(item.amount).toLocaleString('th-TH', {minimumFractionDigits: 2}) + ' บาท' : '-';
+            
+            row.innerHTML = `
+                <td><strong>${item.number}/${item.year}</strong></td>
+                <td class="subject-column" title="${item.subject}">${item.subject}</td>
+                <td>${new Date(item.date).toLocaleDateString('th-TH')}</td>
+                <td>${amount}</td>
+                <td><span class="${statusClass}">${item.status}</span></td>
+                <td>${item.reserver}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm me-1" onclick="editRecord('${item.id}', '${type}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteRecord('${item.id}', '${type}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            return row;
+        }
+
+        function createPagination(type, totalPages, currentPage) {
+            const paginationElement = document.getElementById(type + 'Pagination');
+            paginationElement.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="changePage('${type}', ${currentPage - 1})">ก่อนหน้า</a>`;
+            paginationElement.appendChild(prevLi);
+
+            // Page numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                const firstLi = document.createElement('li');
+                firstLi.className = 'page-item';
+                firstLi.innerHTML = `<a class="page-link" href="#" onclick="changePage('${type}', 1)">1</a>`;
+                paginationElement.appendChild(firstLi);
+
+                if (startPage > 2) {
+                    const dotsLi = document.createElement('li');
+                    dotsLi.className = 'page-item disabled';
+                    dotsLi.innerHTML = '<span class="page-link">...</span>';
+                    paginationElement.appendChild(dotsLi);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" onclick="changePage('${type}', ${i})">${i}</a>`;
+                paginationElement.appendChild(li);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dotsLi = document.createElement('li');
+                    dotsLi.className = 'page-item disabled';
+                    dotsLi.innerHTML = '<span class="page-link">...</span>';
+                    paginationElement.appendChild(dotsLi);
+                }
+
+                const lastLi = document.createElement('li');
+                lastLi.className = 'page-item';
+                lastLi.innerHTML = `<a class="page-link" href="#" onclick="changePage('${type}', ${totalPages})">${totalPages}</a>`;
+                paginationElement.appendChild(lastLi);
+            }
+
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="changePage('${type}', ${currentPage + 1})">ถัดไป</a>`;
+            paginationElement.appendChild(nextLi);
+        }
+
+        window.changePage = function(type, page) {
+            if (type === 'purchase') {
+                currentPurchasePage = page;
+                displayPurchaseData();
+            } else {
+                currentHirePage = page;
+                displayHireData();
+            }
+        };
+
+        async function savePurchaseOrder() {
+            const form = document.getElementById('purchaseForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const data = {
+                year: document.getElementById('purchaseYear').value,
+                number: document.getElementById('purchaseNumber').value,
+                subject: document.getElementById('purchaseSubject').value,
+                date: document.getElementById('purchaseDate').value,
+                amount: document.getElementById('purchaseAmount').value || null,
+                status: document.getElementById('purchaseStatus').value,
+                reserver: document.getElementById('purchaseReserver').value,
+                timestamp: Date.now()
+            };
+
+            showLoading();
+            try {
+                const purchaseRef = ref(database, 'purchaseOrders');
+                await push(purchaseRef, data);
+                
+                hideLoading();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'ข้อมูลใบสั่งซื้อได้รับการบันทึกแล้ว',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                form.reset();
+                bootstrap.Modal.getInstance(document.getElementById('addPurchaseModal')).hide();
+            } catch (error) {
+                hideLoading();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
+                });
+            }
+        }
+
+        async function saveHireOrder() {
+            const form = document.getElementById('hireForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const data = {
+                year: document.getElementById('hireYear').value,
+                number: document.getElementById('hireNumber').value,
+                subject: document.getElementById('hireSubject').value,
+                date: document.getElementById('hireDate').value,
+                amount: document.getElementById('hireAmount').value || null,
+                status: document.getElementById('hireStatus').value,
+                reserver: document.getElementById('hireReserver').value,
+                timestamp: Date.now()
+            };
+
+            showLoading();
+            try {
+                const hireRef = ref(database, 'hireOrders');
+                await push(hireRef, data);
+                
+                hideLoading();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'ข้อมูลใบสั่งจ้างได้รับการบันทึกแล้ว',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                form.reset();
+                bootstrap.Modal.getInstance(document.getElementById('addHireModal')).hide();
+            } catch (error) {
+                hideLoading();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
+                });
+            }
+        }
+
+        function editRecord(id, type) {
+            const data = type === 'purchase' ? purchaseData : hireData;
+            const record = data.find(item => item.id === id);
+            
+            if (!record) return;
+
+            document.getElementById('editId').value = id;
+            document.getElementById('editType').value = type;
+            document.getElementById('editYear').value = record.year;
+            document.getElementById('editNumber').setAttribute('data-current', record.number);
+            document.getElementById('editSubject').value = record.subject;
+            document.getElementById('editDate').value = record.date;
+            document.getElementById('editAmount').value = record.amount || '';
+            document.getElementById('editStatus').value = record.status;
+            document.getElementById('editReserver').value = record.reserver;
+
+            populateEditNumbers(record.year);
+            
+            const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }
+
+        async function updateRecord() {
+            const form = document.getElementById('editForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const id = document.getElementById('editId').value;
+            const type = document.getElementById('editType').value;
+            
+            const data = {
+                year: document.getElementById('editYear').value,
+                number: document.getElementById('editNumber').value,
+                subject: document.getElementById('editSubject').value,
+                date: document.getElementById('editDate').value,
+                amount: document.getElementById('editAmount').value || null,
+                status: document.getElementById('editStatus').value,
+                reserver: document.getElementById('editReserver').value,
+                timestamp: Date.now()
+            };
+
+            showLoading();
+            try {
+                const recordRef = ref(database, `${type}Orders/${id}`);
+                await set(recordRef, data);
+                
+                hideLoading();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'แก้ไขสำเร็จ!',
+                    text: 'ข้อมูลได้รับการแก้ไขแล้ว',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            } catch (error) {
+                hideLoading();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: 'ไม่สามารถแก้ไขข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
+                });
+            }
+        }
+
+        async function deleteRecord(id, type) {
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: 'คุณต้องการลบข้อมูลนี้หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (result.isConfirmed) {
+                showLoading();
+                try {
+                    const recordRef = ref(database, `${type}Orders/${id}`);
+                    await remove(recordRef);
+                    
+                    hideLoading();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ลบสำเร็จ!',
+                        text: 'ข้อมูลได้รับการลบแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } catch (error) {
+                    hideLoading();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด!',
+                        text: 'ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
+                    });
+                }
+            }
+        }
+
+        function downloadTemplate(type) {
+            const headers = ['ปีที่', 'เลขที่', 'เรื่อง', 'ลงวันที่', 'วงเงิน', 'สถานะ', 'ผู้จอง'];
+            const sampleData = [
+                ['2568', '1', 'ซื้อวัสดุสำนักงาน', '2024-12-01', '5000', 'จอง', 'ผอ.'],
+                ['2568', '2', 'ซื้ออุปกรณ์คอมพิวเตอร์', '2024-12-02', '15000', 'ดำเนินการแล้ว', 'ครูโฉม'],
+                ['2568', '3', 'ซื้อหนังสือเรียน', '2024-12-03', '', 'จอง', 'ครูมดใหญ่']
+            ];
+
+            let csvContent = '\uFEFF'; // BOM for UTF-8
+            csvContent += headers.join(',') + '\n';
+            sampleData.forEach(row => {
+                csvContent += row.map(field => `"${field}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `template_${type === 'purchase' ? 'ใบสั่งซื้อ' : 'ใบสั่งจ้าง'}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'ดาวน์โหลดสำเร็จ!',
+                text: 'ไฟล์ Template ได้รับการดาวน์โหลดแล้ว',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        function importData(type, fileInput) {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไฟล์ไม่ถูกต้อง!',
+                    text: 'กรุณาเลือกไฟล์ CSV เท่านั้น'
+                });
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                    
+                    // Validate headers
+                    const expectedHeaders = ['ปีที่', 'เลขที่', 'เรื่อง', 'ลงวันที่', 'วงเงิน', 'สถานะ', 'ผู้จอง'];
+                    const headersMatch = expectedHeaders.every(h => headers.includes(h));
+                    
+                    if (!headersMatch) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'รูปแบบไฟล์ไม่ถูกต้อง!',
+                            text: 'กรุณาใช้ไฟล์ Template ที่ดาวน์โหลดมา'
+                        });
+                        return;
+                    }
+
+                    const data = [];
+                    const errors = [];
+                    const existingData = type === 'purchase' ? purchaseData : hireData;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+
+                        const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+                        if (values.length < 7) continue;
+
+                        const [year, number, subject, date, amount, status, reserver] = values;
+
+                        // Validate required fields
+                        if (!year || !number || !subject || !date || !status || !reserver) {
+                            errors.push(`แถวที่ ${i + 1}: ข้อมูลไม่ครบถ้วน`);
+                            continue;
+                        }
+
+                        // Check if document number already exists
+                        const exists = existingData.some(item => 
+                            item.year === year && item.number === number
+                        );
+
+                        if (exists) {
+                            errors.push(`แถวที่ ${i + 1}: เลขที่ ${number}/${year} มีอยู่แล้ว`);
+                            continue;
+                        }
+
+                        // Validate year
+                        if (!['2568', '2569', '2570'].includes(year)) {
+                            errors.push(`แถวที่ ${i + 1}: ปีที่ไม่ถูกต้อง (${year})`);
+                            continue;
+                        }
+
+                        // Validate number
+                        const num = parseInt(number);
+                        if (isNaN(num) || num < 1 || num > 100) {
+                            errors.push(`แถวที่ ${i + 1}: เลขที่ไม่ถูกต้อง (${number})`);
+                            continue;
+                        }
+
+                        // Validate status
+                        if (!['จอง', 'ดำเนินการแล้ว'].includes(status)) {
+                            errors.push(`แถวที่ ${i + 1}: สถานะไม่ถูกต้อง (${status})`);
+                            continue;
+                        }
+
+                        // Validate reserver
+                        const validReservers = ['ผอ.', 'ครูโฉม', 'ครูมดใหญ่', 'ครูมอส', 'ครูแบม', 'ครูเอฟ', 'ครูแอม', 'ครูมดน้อย', 'ครูเก่ง', 'ครูฟ้า'];
+                        if (!validReservers.includes(reserver)) {
+                            errors.push(`แถวที่ ${i + 1}: ผู้จองไม่ถูกต้อง (${reserver})`);
+                            continue;
+                        }
+
+                        data.push({
+                            year,
+                            number,
+                            subject,
+                            date,
+                            amount: amount || null,
+                            status,
+                            reserver,
+                            timestamp: Date.now()
+                        });
+                    }
+
+                    if (errors.length > 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'พบข้อผิดพลาด!',
+                            html: errors.slice(0, 5).join('<br>') + (errors.length > 5 ? '<br>และอีก ' + (errors.length - 5) + ' รายการ' : ''),
+                            confirmButtonText: 'ตกลง'
+                        });
+                        
+                        if (data.length === 0) {
+                            fileInput.value = '';
+                            return;
+                        }
+                    }
+
+                    if (data.length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'ไม่มีข้อมูลที่ถูกต้อง!',
+                            text: 'กรุณาตรวจสอบไฟล์และลองใหม่อีกครั้ง'
+                        });
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    // Confirm import
+                    const result = await Swal.fire({
+                        title: 'ยืนยันการนำเข้า',
+                        text: `พบข้อมูลที่ถูกต้อง ${data.length} รายการ${errors.length > 0 ? ' (มีข้อผิดพลาด ' + errors.length + ' รายการ)' : ''} ต้องการนำเข้าหรือไม่?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'นำเข้า',
+                        cancelButtonText: 'ยกเลิก'
+                    });
+
+                    if (result.isConfirmed) {
+                        showLoading();
+                        
+                        try {
+                            const dbRef = ref(database, `${type}Orders`);
+                            
+                            for (const item of data) {
+                                await push(dbRef, item);
+                            }
+
+                            hideLoading();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'นำเข้าสำเร็จ!',
+                                text: `นำเข้าข้อมูล ${data.length} รายการเรียบร้อยแล้ว`,
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+
+                        } catch (error) {
+                            hideLoading();
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด!',
+                                text: 'ไม่สามารถนำเข้าข้อมูลได้ กรุณาลองใหม่อีกครั้ง'
+                            });
+                        }
+                    }
+
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด!',
+                        text: 'ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบไฟล์'
+                    });
+                }
+
+                fileInput.value = '';
+            };
+
+            reader.readAsText(file, 'UTF-8');
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98848dd364b71d37',t:'MTc1OTQxMTgyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
